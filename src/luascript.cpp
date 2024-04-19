@@ -943,6 +943,10 @@ void LuaScriptInterface::pushOutfit(lua_State* L, const Outfit_t& outfit)
 	setField(L, "lookBody", outfit.lookBody);
 	setField(L, "lookLegs", outfit.lookLegs);
 	setField(L, "lookFeet", outfit.lookFeet);
+	setField(L, "lookWing", outfit.lookWing);
+	setField(L, "lookAura", outfit.lookAura);
+	setField(L, "lookEffect", outfit.lookEffect);
+	setField(L, "lookShader", outfit.lookShader);
 	setField(L, "lookAddons", outfit.lookAddons);
 	setField(L, "lookMount", outfit.lookMount);
 }
@@ -977,6 +981,38 @@ void LuaScriptInterface::pushLoot(lua_State* L, const std::vector<LootBlock>& lo
 
 		lua_rawseti(L, -2, ++index);
 	}
+}
+void LuaScriptInterface::pushWing(lua_State* L, const Wing* wing)
+{
+	lua_createtable(L, 0, 5);
+	setField(L, "name", wing->name);
+	setField(L, "speed", wing->speed);
+	setField(L, "id", wing->id);
+	setField(L, "premium", wing->premium);
+}
+void LuaScriptInterface::pushShader(lua_State* L, const Shader* shader)
+{
+	lua_createtable(L, 0, 5);
+	setField(L, "name", shader->name);
+	setField(L, "id", shader->id);
+	setField(L, "premium", shader->premium);
+}
+
+void LuaScriptInterface::pushAura(lua_State* L, const Aura* aura)
+{
+	lua_createtable(L, 0, 5);
+	setField(L, "name", aura->name);
+	setField(L, "speed", aura->speed);
+	setField(L, "id", aura->id);
+	setField(L, "premium", aura->premium);
+}
+void LuaScriptInterface::pushEffect(lua_State* L, const Effect* effect)
+{
+	lua_createtable(L, 0, 5);
+	setField(L, "name", effect->name);
+	setField(L, "speed", effect->speed);
+	setField(L, "id", effect->id);
+	setField(L, "premium", effect->premium);
 }
 
 #define registerEnum(value) { std::string enumName = #value; registerGlobalVariable(enumName.substr(enumName.find_last_of(':') + 1), value); }
@@ -1883,6 +1919,10 @@ void LuaScriptInterface::registerFunctions()
 	registerEnum(RELOAD_TYPE_ITEMS)
 	registerEnum(RELOAD_TYPE_MONSTERS)
 	registerEnum(RELOAD_TYPE_MOUNTS)
+		registerEnum(RELOAD_TYPE_SHADERS);
+	registerEnum(RELOAD_TYPE_WINGS);
+	registerEnum(RELOAD_TYPE_AURAS);
+	registerEnum(RELOAD_TYPE_EFFECTS);
 	registerEnum(RELOAD_TYPE_MOVEMENTS)
 	registerEnum(RELOAD_TYPE_NPCS)
 	registerEnum(RELOAD_TYPE_QUESTS)
@@ -2049,6 +2089,10 @@ void LuaScriptInterface::registerFunctions()
 	registerMethod("Game", "getAccountStorageValue", LuaScriptInterface::luaGameGetAccountStorageValue);
 	registerMethod("Game", "setAccountStorageValue", LuaScriptInterface::luaGameSetAccountStorageValue);
 	registerMethod("Game", "saveAccountStorageValues", LuaScriptInterface::luaGameSaveAccountStorageValues);
+	registerMethod("Game", "getWings", LuaScriptInterface::luaGameGetWings);
+	registerMethod("Game", "getEffects", LuaScriptInterface::luaGameGetEffects);
+	registerMethod("Game", "getAuras", LuaScriptInterface::luaGameGetAuras);
+	registerMethod("Game", "getShaders", LuaScriptInterface::luaGameGetShaders);
 
 	// Variant
 	registerClass("Variant", "", LuaScriptInterface::luaVariantCreate);
@@ -2227,6 +2271,9 @@ void LuaScriptInterface::registerFunctions()
 
 	registerMethod("Item", "setStoreItem", LuaScriptInterface::luaItemSetStoreItem);
 	registerMethod("Item", "isStoreItem", LuaScriptInterface::luaItemIsStoreItem);
+	registerMethod("Item", "setShader", LuaScriptInterface::luaItemSetShader);
+	registerMethod("Item", "getShader", LuaScriptInterface::luaItemGetShader);
+	registerMethod("Item", "hasShader", LuaScriptInterface::luaItemHasShader);
 
 	// Container
 	registerClass("Container", "Item", LuaScriptInterface::luaContainerCreate);
@@ -2335,6 +2382,11 @@ void LuaScriptInterface::registerFunctions()
 	registerMethod("Creature", "move", LuaScriptInterface::luaCreatureMove);
 
 	registerMethod("Creature", "getZone", LuaScriptInterface::luaCreatureGetZone);
+
+	registerMethod("Creature", "attachEffectById", LuaScriptInterface::luaCreatureAttachEffectById);
+	registerMethod("Creature", "detachEffectById", LuaScriptInterface::luaCreatureDetachEffectById);
+	registerMethod("Creature", "getShader", LuaScriptInterface::luaCreatureGetShader);
+	registerMethod("Creature", "setShader", LuaScriptInterface::luaCreatureSetShader);
 
 	// Player
 	registerClass("Player", "Creature", LuaScriptInterface::luaPlayerCreate);
@@ -2508,7 +2560,30 @@ void LuaScriptInterface::registerFunctions()
 	registerMethod("Player", "getFightMode", LuaScriptInterface::luaPlayerGetFightMode);
 
 	registerMethod("Player", "getStoreInbox", LuaScriptInterface::luaPlayerGetStoreInbox);
-
+	// @ wings
+	registerMethod("Player", "addWing", LuaScriptInterface::luaPlayerAddWing);
+	registerMethod("Player", "removeWing", LuaScriptInterface::luaPlayerRemoveWing);
+	registerMethod("Player", "hasWing", LuaScriptInterface::luaPlayerHasWing);
+	registerMethod("Player", "toggleWing", LuaScriptInterface::luaPlayerToggleWing);
+	// @
+	// @ auras
+	registerMethod("Player", "addAura", LuaScriptInterface::luaPlayerAddAura);
+	registerMethod("Player", "removeAura", LuaScriptInterface::luaPlayerRemoveAura);
+	registerMethod("Player", "hasAura", LuaScriptInterface::luaPlayerHasAura);
+	registerMethod("Player", "toggleAura", LuaScriptInterface::luaPlayerToggleAura);
+	// @
+	// @ effects
+	registerMethod("Player", "addEffect", LuaScriptInterface::luaPlayerAddEffect);
+	registerMethod("Player", "removeEffect", LuaScriptInterface::luaPlayerRemoveEffect);
+	registerMethod("Player", "hasEffect", LuaScriptInterface::luaPlayerHasEffect);
+	registerMethod("Player", "toggleEffect", LuaScriptInterface::luaPlayerToggleEffect);
+	// @
+	registerMethod("Player", "addShader", LuaScriptInterface::luaPlayerAddShader);
+	registerMethod("Player", "removeShader", LuaScriptInterface::luaPlayerRemoveShader);
+	registerMethod("Player", "hasShader", LuaScriptInterface::luaPlayerHasShader);
+	registerMethod("Player", "toggleShader", LuaScriptInterface::luaPlayerToggleShader);
+	registerMethod("Player", "getMapShader", LuaScriptInterface::luaPlayerGetMapShader);
+	registerMethod("Player", "setMapShader", LuaScriptInterface::luaPlayerSetMapShader);
 	// Monster
 	registerClass("Monster", "Creature", LuaScriptInterface::luaMonsterCreate);
 	registerMetaMethod("Monster", "__eq", LuaScriptInterface::luaUserdataCompare);
@@ -4492,6 +4567,19 @@ int LuaScriptInterface::luaGameCreateMonster(lua_State* L)
 		if (g_game.placeCreature(monster, position, extended, force)) {
 			pushUserdata<Monster>(L, monster);
 			setMetatable(L, -1, "Monster");
+			if (monster->rayosEffect() != 0) {
+				monster->attachEffectById(monster->rayosEffect());
+			}
+			if (monster->wignsEffect() != 0) {
+				monster->attachEffectById(monster->wignsEffect());
+			}
+			if (monster->auraEffect() != 0) {
+				monster->attachEffectById(monster->auraEffect());
+			}
+			if (monster->shaderEffect() != "") {
+				monster->setShader(monster->shaderEffect());
+				g_game.updateCreatureShader(monster);
+			}
 		} else {
 			delete monster;
 			lua_pushnil(L);
@@ -4671,7 +4759,65 @@ int LuaScriptInterface::luaGameSaveAccountStorageValues(lua_State* L)
 
 	return 1;
 }
+int LuaScriptInterface::luaGameGetWings(lua_State* L)
+{
+	// Game.getWings()
+	const auto& wings = g_game.wings.getWings();
+	lua_createtable(L, wings.size(), 0);
 
+	int index = 0;
+	for (const auto& wing : wings) {
+		pushWing(L, &wing);
+		lua_rawseti(L, -2, ++index);
+	}
+
+	return 1;
+}
+// shaders
+int LuaScriptInterface::luaGameGetShaders(lua_State* L)
+{
+	// Game.getShaders()
+	const auto& shaders = g_game.shaders.getShaders();
+	lua_createtable(L, shaders.size(), 0);
+
+	int index = 0;
+	for (const auto& shader : shaders) {
+		pushShader(L, &shader);
+		lua_rawseti(L, -2, ++index);
+	}
+
+	return 1;
+}
+
+int LuaScriptInterface::luaGameGetAuras(lua_State* L)
+{
+	// Game.getAuras()
+	const auto& auras = g_game.auras.getAuras();
+	lua_createtable(L, auras.size(), 0);
+
+	int index = 0;
+	for (const auto& aura : auras) {
+		pushAura(L, &aura);
+		lua_rawseti(L, -2, ++index);
+	}
+
+	return 1;
+}
+
+int LuaScriptInterface::luaGameGetEffects(lua_State* L)
+{
+	// Game.getEffects()
+	const auto& effects = g_game.effects.getEffects();
+	lua_createtable(L, effects.size(), 0);
+
+	int index = 0;
+	for (const auto& effect : effects) {
+		pushEffect(L, &effect);
+		lua_rawseti(L, -2, ++index);
+	}
+
+	return 1;
+}
 // Variant
 int LuaScriptInterface::luaVariantCreate(lua_State* L)
 {
@@ -6821,6 +6967,7 @@ int LuaScriptInterface::luaItemIsLoadedFromMap(lua_State* L)
 	return 1;
 }
 
+
 int LuaScriptInterface::luaItemSetStoreItem(lua_State* L)
 {
 	// item:setStoreItem(storeItem)
@@ -8130,6 +8277,71 @@ int LuaScriptInterface::luaCreatureGetZone(lua_State* L)
 	}
 	return 1;
 }
+int luaCreatureAttachEffectById(lua_State* L)
+{
+	// creature:attachEffectById(effectId, [temporary])
+	Creature* creature = getUserdata<Creature>(L, 1);
+	if (!creature) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	uint16_t id = getInteger<uint16_t>(L, 2);
+	bool temp = getBoolean(L, 3, false);
+
+	if (temp)
+		g_game.sendAttachedEffect(creature, id);
+	else
+		creature->attachEffectById(id);
+
+	return 1;
+}
+
+int luaCreatureDetachEffectById(lua_State* L)
+{
+	// creature:detachEffectById(effectId)
+	Creature* creature = getUserdata<Creature>(L, 1);
+	if (!creature) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	uint16_t id = getNumber<uint16_t>(L, 2);
+	creature->detachEffectById(id);
+
+	return 1;
+}
+
+int luaCreatureGetShader(lua_State* L)
+{
+	// creature:getShader()
+	const auto* creature = getUserdata<const Creature>(L, 1);
+	if (creature) {
+		pushString(L, creature->getShader());
+	}
+	else {
+		lua_pushnil(L);
+	}
+
+	return 1;
+}
+
+int luaCreatureSetShader(lua_State* L)
+{
+	// creature:setShader(shaderName)
+	auto* creature = getUserdata<Creature>(L, 1);
+	if (!creature) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	creature->setShader(getString(L, 2));
+	g_game.updateCreatureShader(creature);
+
+	pushBoolean(L, true);
+	return 1;
+}
+
 
 // Player
 int LuaScriptInterface::luaPlayerCreate(lua_State* L)
@@ -10274,7 +10486,415 @@ int LuaScriptInterface::luaPlayerGetStoreInbox(lua_State* L)
 	setMetatable(L, -1, "Container");
 	return 1;
 }
+// @ wings
 
+int LuaScriptInterface::luaPlayerAddWing(lua_State* L)
+{
+	// player:addWing(wingId or wingName)
+	Player* player = getUserdata<Player>(L, 1);
+	if (!player) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	uint16_t wingId;
+	if (isInteger(L, 2)) {
+		wingId = getInteger<uint16_t>(L, 2);
+	}
+	else {
+		Wing* wing = g_game.wings.getWingByName(getString(L, 2));
+		if (!wing) {
+			lua_pushnil(L);
+			return 1;
+		}
+		wingId = wing->id;
+	}
+
+	pushBoolean(L, player->tameWing(wingId));
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerRemoveWing(lua_State* L)
+{
+	// player:removeWing(wingId or wingName)
+	Player* player = getUserdata<Player>(L, 1);
+	if (!player) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	uint16_t wingId;
+	if (isInteger(L, 2)) {
+		wingId = getInteger<uint16_t>(L, 2);
+	}
+	else {
+		Wing* wing = g_game.wings.getWingByName(getString(L, 2));
+		if (!wing) {
+			lua_pushnil(L);
+			return 1;
+		}
+		wingId = wing->id;
+	}
+
+	pushBoolean(L, player->untameWing(wingId));
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerHasWing(lua_State* L)
+{
+	// player:hasWing(wingId or wingName)
+	const Player* player = getUserdata<const Player>(L, 1);
+	if (!player) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	Wing* wing = nullptr;
+	if (isInteger(L, 2)) {
+		wing = g_game.wings.getWingByID(getInteger<uint16_t>(L, 2));
+	}
+	else {
+		wing = g_game.wings.getWingByName(getString(L, 2));
+	}
+
+	if (wing) {
+		pushBoolean(L, player->hasWing(wing));
+	}
+	else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerToggleWing(lua_State* L)
+{
+	// player:toggleWing(wing)
+	Player* player = getUserdata<Player>(L, 1);
+	if (!player) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	bool wing = getBoolean(L, 2);
+	pushBoolean(L, player->toggleWing(wing));
+	return 1;
+}
+
+// @
+// @ auras
+
+int LuaScriptInterface::luaPlayerAddAura(lua_State* L)
+{
+	// player:addAura(auraId or auraName)
+	Player* player = getUserdata<Player>(L, 1);
+	if (!player) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	uint16_t auraId;
+	if (isInteger(L, 2)) {
+		auraId = getInteger<uint16_t>(L, 2);
+	}
+	else {
+		Aura* aura = g_game.auras.getAuraByName(getString(L, 2));
+		if (!aura) {
+			lua_pushnil(L);
+			return 1;
+		}
+		auraId = aura->id;
+	}
+
+	pushBoolean(L, player->tameAura(auraId));
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerRemoveAura(lua_State* L)
+{
+	// player:removeAura(auraId or auraName)
+	Player* player = getUserdata<Player>(L, 1);
+	if (!player) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	uint16_t auraId;
+	if (isInteger(L, 2)) {
+		auraId = getInteger<uint16_t>(L, 2);
+	}
+	else {
+		Aura* aura = g_game.auras.getAuraByName(getString(L, 2));
+		if (!aura) {
+			lua_pushnil(L);
+			return 1;
+		}
+		auraId = aura->id;
+	}
+
+	pushBoolean(L, player->untameAura(auraId));
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerHasAura(lua_State* L)
+{
+	// player:hasAura(auraId or auraName)
+	const Player* player = getUserdata<const Player>(L, 1);
+	if (!player) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	Aura* aura = nullptr;
+	if (isInteger(L, 2)) {
+		aura = g_game.auras.getAuraByID(getInteger<uint16_t>(L, 2));
+	}
+	else {
+		aura = g_game.auras.getAuraByName(getString(L, 2));
+	}
+
+	if (aura) {
+		pushBoolean(L, player->hasAura(aura));
+	}
+	else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerToggleAura(lua_State* L)
+{
+	// player:toggleAura(aura)
+	Player* player = getUserdata<Player>(L, 1);
+	if (!player) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	bool aura = getBoolean(L, 2);
+	pushBoolean(L, player->toggleAura(aura));
+	return 1;
+}
+
+// @
+// @ effects
+
+int LuaScriptInterface::luaPlayerAddEffect(lua_State* L)
+{
+	// player:addEffect(effectId or effectName)
+	Player* player = getUserdata<Player>(L, 1);
+	if (!player) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	uint16_t effectId;
+	if (isInteger(L, 2)) {
+		effectId = getInteger<uint16_t>(L, 2);
+	}
+	else {
+		Effect* effect = g_game.effects.getEffectByName(getString(L, 2));
+		if (!effect) {
+			lua_pushnil(L);
+			return 1;
+		}
+		effectId = effect->id;
+	}
+
+	pushBoolean(L, player->tameEffect(effectId));
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerRemoveEffect(lua_State* L)
+{
+	// player:removeEffect(effectId or effectName)
+	Player* player = getUserdata<Player>(L, 1);
+	if (!player) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	uint16_t effectId;
+	if (isInteger(L, 2)) {
+		effectId = getInteger<uint16_t>(L, 2);
+	}
+	else {
+		Effect* effect = g_game.effects.getEffectByName(getString(L, 2));
+		if (!effect) {
+			lua_pushnil(L);
+			return 1;
+		}
+		effectId = effect->id;
+	}
+
+	pushBoolean(L, player->untameEffect(effectId));
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerHasEffect(lua_State* L)
+{
+	// player:hasEffect(effectId or effectName)
+	const Player* player = getUserdata<const Player>(L, 1);
+	if (!player) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	Effect* effect = nullptr;
+	if (isInteger(L, 2)) {
+		effect = g_game.effects.getEffectByID(getInteger<uint16_t>(L, 2));
+	}
+	else {
+		effect = g_game.effects.getEffectByName(getString(L, 2));
+	}
+
+	if (effect) {
+		pushBoolean(L, player->hasEffect(effect));
+	}
+	else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerToggleEffect(lua_State* L)
+{
+	// player:toggleEffect(effect)
+	Player* player = getUserdata<Player>(L, 1);
+	if (!player) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	bool effect = getBoolean(L, 2);
+	pushBoolean(L, player->toggleEffect(effect));
+	return 1;
+}
+
+// @
+int LuaScriptInterface::luaPlayerAddShader(lua_State* L)
+{
+	// player:addShader(shaderId or shaderName)
+	Player* player = getUserdata<Player>(L, 1);
+	if (!player) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	uint16_t shaderId;
+	if (isInteger(L, 2)) {
+		shaderId = getInteger<uint16_t>(L, 2);
+	}
+	else {
+		Shader* shader = g_game.shaders.getShaderByName(getString(L, 2));
+		if (!shader) {
+			lua_pushnil(L);
+			return 1;
+		}
+		shaderId = shader->id;
+	}
+
+	pushBoolean(L, player->tameShader(shaderId));
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerRemoveShader(lua_State* L)
+{
+	// player:removeShader(shaderId or shaderName)
+	Player* player = getUserdata<Player>(L, 1);
+	if (!player) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	uint16_t shaderId;
+	if (isInteger(L, 2)) {
+		shaderId = getInteger<uint16_t>(L, 2);
+	}
+	else {
+		Shader* shader = g_game.shaders.getShaderByName(getString(L, 2));
+		if (!shader) {
+			lua_pushnil(L);
+			return 1;
+		}
+		shaderId = shader->id;
+	}
+
+	pushBoolean(L, player->untameShader(shaderId));
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerHasShader(lua_State* L)
+{
+	// player:hasShader(shaderId or shaderName)
+	const Player* player = getUserdata<const Player>(L, 1);
+	if (!player) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	Shader* shader = nullptr;
+	if (isInteger(L, 2)) {
+		shader = g_game.shaders.getShaderByID(getInteger<uint16_t>(L, 2));
+	}
+	else {
+		shader = g_game.shaders.getShaderByName(getString(L, 2));
+	}
+
+	if (shader) {
+		pushBoolean(L, player->hasShader(shader));
+	}
+	else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerToggleShader(lua_State* L)
+{
+	// player:toggleShader(shader)
+	Player* player = getUserdata<Player>(L, 1);
+	if (!player) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	bool shader = getBoolean(L, 2);
+	pushBoolean(L, player->toggleShader(shader));
+	return 1;
+}
+int LuaScriptInterface::LuaScriptInterface::luaPlayerGetMapShader(lua_State* L)
+{
+	// player:getMapShader()
+	const auto* player = getUserdata<const Player>(L, 1);
+	if (player) {
+		pushString(L, player->getMapShader());
+	}
+	else {
+		lua_pushnil(L);
+	}
+
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerSetMapShader(lua_State* L)
+{
+	// player:setMapShader(shaderName, [temporary])
+	auto* player = getUserdata<Player>(L, 1);
+	if (!player) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	const auto& shaderName = getString(L, 2);
+	bool temp = getBoolean(L, 3, false);
+
+	if (!temp) player->setMapShader(shaderName);
+
+	player->sendMapShader(shaderName);
+
+	pushBoolean(L, true);
+	return 1;
+}
 // Monster
 int LuaScriptInterface::luaMonsterCreate(lua_State* L)
 {
@@ -10295,6 +10915,20 @@ int LuaScriptInterface::luaMonsterCreate(lua_State* L)
 	if (monster) {
 		pushUserdata<Monster>(L, monster);
 		setMetatable(L, -1, "Monster");
+
+		if (monster->rayosEffect() != 0) {
+			monster->attachEffectById(monster->rayosEffect());
+		}
+		if (monster->wignsEffect() != 0) {
+			monster->attachEffectById(monster->wignsEffect());
+		}
+		if (monster->auraEffect() != 0) {
+			monster->attachEffectById(monster->auraEffect());
+		}
+		if (monster->shaderEffect() != "") {
+			monster->setShader(monster->shaderEffect());
+			g_game.updateCreatureShader(monster);
+		}
 	} else {
 		lua_pushnil(L);
 	}

@@ -1627,3 +1627,21 @@ bool Creature::getPathTo(const Position& targetPos, std::vector<Direction>& dirL
 	fpp.maxTargetDist = maxTargetDist;
 	return getPathTo(targetPos, dirList, fpp);
 }
+
+void Creature::attachEffectById(uint16_t id)
+{
+	auto it = std::find(attachedEffectList.begin(), attachedEffectList.end(), id);
+	if (it != attachedEffectList.end()) return;
+
+	attachedEffectList.push_back(id);
+	g_game.sendAttachedEffect(this, id);
+}
+void Creature::detachEffectById(uint16_t id)
+{
+	auto it = std::find(attachedEffectList.begin(), attachedEffectList.end(), id);
+	if (it == attachedEffectList.end()) return;
+
+	attachedEffectList.erase(it);
+	g_game.sendDetachEffect(this, id);
+}
+

@@ -195,13 +195,13 @@ bool IOLoginData::preloadPlayer(Player* player, const std::string& name)
 bool IOLoginData::loadPlayerById(Player* player, uint32_t id)
 {
 	Database& db = Database::getInstance();
-	return loadPlayer(player, db.storeQuery(fmt::format("SELECT `id`, `name`, `account_id`, `group_id`, `sex`, `vocation`, `experience`, `level`, `maglevel`, `health`, `healthmax`, `blessings`, `mana`, `manamax`, `manaspent`, `soul`, `lookbody`, `lookfeet`, `lookhead`, `looklegs`, `looktype`, `lookaddons`, `posx`, `posy`, `posz`, `cap`, `lastlogin`, `lastlogout`, `lastip`, `conditions`, `skulltime`, `skull`, `town_id`, `balance`, `offlinetraining_time`, `offlinetraining_skill`, `stamina`, `skill_fist`, `skill_fist_tries`, `skill_club`, `skill_club_tries`, `skill_sword`, `skill_sword_tries`, `skill_axe`, `skill_axe_tries`, `skill_dist`, `skill_dist_tries`, `skill_shielding`, `skill_shielding_tries`, `skill_fishing`, `skill_fishing_tries`, `direction` FROM `players` WHERE `id` = {:d}", id)));
+	return loadPlayer(player, db.storeQuery(fmt::format("SELECT `id`, `name`, `account_id`, `group_id`, `sex`, `vocation`, `experience`, `level`, `maglevel`, `health`, `healthmax`, `blessings`, `mana`, `manamax`, `manaspent`, `soul`, `lookbody`, `lookfeet`, `lookhead`, `looklegs`, `looktype`, `lookaddons`, `currentwing`, `randomizewing`,`currenteffect`, `randomizeeffect`,`currentaura`, `randomizeaura`,`currentshader`, `randomizeshader`,`posx`, `posy`, `posz`, `cap`, `lastlogin`, `lastlogout`, `lastip`, `conditions`, `skulltime`, `skull`, `town_id`, `balance`, `offlinetraining_time`, `offlinetraining_skill`, `stamina`, `skill_fist`, `skill_fist_tries`, `skill_club`, `skill_club_tries`, `skill_sword`, `skill_sword_tries`, `skill_axe`, `skill_axe_tries`, `skill_dist`, `skill_dist_tries`, `skill_shielding`, `skill_shielding_tries`, `skill_fishing`, `skill_fishing_tries`, `direction` FROM `players` WHERE `id` = {:d}", id)));
 }
 
 bool IOLoginData::loadPlayerByName(Player* player, const std::string& name)
 {
 	Database& db = Database::getInstance();
-	return loadPlayer(player, db.storeQuery(fmt::format("SELECT `id`, `name`, `account_id`, `group_id`, `sex`, `vocation`, `experience`, `level`, `maglevel`, `health`, `healthmax`, `blessings`, `mana`, `manamax`, `manaspent`, `soul`, `lookbody`, `lookfeet`, `lookhead`, `looklegs`, `looktype`, `lookaddons`, `posx`, `posy`, `posz`, `cap`, `lastlogin`, `lastlogout`, `lastip`, `conditions`, `skulltime`, `skull`, `town_id`, `balance`, `offlinetraining_time`, `offlinetraining_skill`, `stamina`, `skill_fist`, `skill_fist_tries`, `skill_club`, `skill_club_tries`, `skill_sword`, `skill_sword_tries`, `skill_axe`, `skill_axe_tries`, `skill_dist`, `skill_dist_tries`, `skill_shielding`, `skill_shielding_tries`, `skill_fishing`, `skill_fishing_tries`, `direction` FROM `players` WHERE `name` = {:s}", db.escapeString(name))));
+	return loadPlayer(player, db.storeQuery(fmt::format("SELECT `id`, `name`, `account_id`, `group_id`, `sex`, `vocation`, `experience`, `level`, `maglevel`, `health`, `healthmax`, `blessings`, `mana`, `manamax`, `manaspent`, `soul`, `lookbody`, `lookfeet`, `lookhead`, `looklegs`, `looktype`, `lookaddons`,`currentwing`, `randomizewing`,`currenteffect`, `randomizeeffect`,`currentaura`, `randomizeaura`,`currentshader`, `randomizeshader`, `posx`, `posy`, `posz`, `cap`, `lastlogin`, `lastlogout`, `lastip`, `conditions`, `skulltime`, `skull`, `town_id`, `balance`, `offlinetraining_time`, `offlinetraining_skill`, `stamina`, `skill_fist`, `skill_fist_tries`, `skill_club`, `skill_club_tries`, `skill_sword`, `skill_sword_tries`, `skill_axe`, `skill_axe_tries`, `skill_dist`, `skill_dist_tries`, `skill_shielding`, `skill_shielding_tries`, `skill_fishing`, `skill_fishing_tries`, `direction` FROM `players` WHERE `name` = {:s}", db.escapeString(name))));
 }
 
 static GuildWarVector getWarList(uint32_t guildId)
@@ -317,7 +317,15 @@ bool IOLoginData::loadPlayer(Player* player, DBResult_ptr result)
 	player->defaultOutfit.lookFeet = result->getNumber<uint16_t>("lookfeet");
 	player->defaultOutfit.lookAddons = result->getNumber<uint16_t>("lookaddons");
 	player->currentOutfit = player->defaultOutfit;
+	player->currentWing = result->getNumber<uint16_t>("currentwing");
+	player->currentEffect = result->getNumber<uint16_t>("currenteffect");
+	player->currentAura = result->getNumber<uint16_t>("currentaura");
+	player->currentShader = result->getNumber<uint16_t>("currentshader");
 	player->direction = static_cast<Direction> (result->getNumber<uint16_t>("direction"));
+	player->randomizeWing = result->getNumber<uint8_t>("randomizewing") != 0;
+	player->randomizeAura = result->getNumber<uint8_t>("randomizeaura") != 0;
+	player->randomizeEffect = result->getNumber<uint8_t>("randomizeeffect") != 0;
+	player->randomizeShader = result->getNumber<uint8_t>("randomizeshader") != 0;
 
 	if (g_game.getWorldType() != WORLD_TYPE_PVP_ENFORCED) {
 		const time_t skullSeconds = result->getNumber<time_t>("skulltime") - time(nullptr);
@@ -544,6 +552,67 @@ bool IOLoginData::loadPlayer(Player* player, DBResult_ptr result)
 			player->addVIPInternal(result->getNumber<uint32_t>("player_id"));
 		} while (result->next());
 	}
+	// load Wings
+	if ((result = db.storeQuery(
+		fmt::format("SELECT `wing_id` FROM `player_wings` WHERE `player_id` = {:d}", player->getGUID())))) {
+		do {
+			player->tameWing(result->getNumber<uint16_t>("wing_id"));
+		} while (result->next());
+	}
+	// load auras
+	if ((result = db.storeQuery(
+		fmt::format("SELECT `aura_id` FROM `player_auras` WHERE `player_id` = {:d}", player->getGUID())))) {
+		do {
+			player->tameAura(result->getNumber<uint16_t>("aura_id"));
+		} while (result->next());
+	}
+	// load effects
+	if ((result = db.storeQuery(
+		fmt::format("SELECT `effect_id` FROM `player_effects` WHERE `player_id` = {:d}", player->getGUID())))) {
+		do {
+			player->tameEffect(result->getNumber<uint16_t>("effect_id"));
+		} while (result->next());
+	}
+
+	// @-- wings
+	uint16_t currentWing = player->getCurrentWing();
+	std::cout << "currentWing: " << currentWing << std::endl;
+	if (currentWing > 0) {
+		player->attachEffectById(currentWing);
+	}
+	// @--
+	// @-- Aura
+	uint16_t currentAura = player->getCurrentAura();
+	std::cout << "currentAura: " << currentAura << std::endl;
+	if (currentAura > 0) {
+		player->attachEffectById(currentAura);
+	}
+	// @--
+	// @-- Effects
+	uint16_t currentEffect = player->getCurrentEffect();
+	std::cout << "EcurrentEffect: " << currentEffect << std::endl;
+	if (currentEffect > 0) {
+		player->attachEffectById(currentEffect);
+	}
+	// @--
+
+	// load Shaders
+	if ((result = db.storeQuery(
+		fmt::format("SELECT `shader_id` FROM `player_shaders` WHERE `player_id` = {:d}", player->getGUID())))) {
+		do {
+			player->tameShader(result->getNumber<uint16_t>("shader_id"));
+		} while (result->next());
+	}
+
+	auto currentShaderID = player->getCurrentShader();
+
+	if (currentShaderID && currentShaderID != 0) {
+		Shader* shader = g_game.shaders.getShaderByID(currentShaderID);
+
+		if (shader && shader->name != "Outfit - Default") {
+			player->setShader(shader->name);
+		}
+	}
 
 	player->updateBaseSpeed();
 	player->updateInventoryWeight();
@@ -651,6 +720,14 @@ bool IOLoginData::savePlayer(Player* player)
 	query << "`looklegs` = " << static_cast<uint32_t>(player->defaultOutfit.lookLegs) << ',';
 	query << "`looktype` = " << player->defaultOutfit.lookType << ',';
 	query << "`lookaddons` = " << static_cast<uint32_t>(player->defaultOutfit.lookAddons) << ',';
+	query << "`currentwing` = " << static_cast<uint16_t>(player->currentWing) << ',';
+	query << "`randomizewing` = " << player->randomizeWing << ",";
+	query << "`currenteffect` = " << static_cast<uint16_t>(player->currentEffect) << ',';
+	query << "`randomizeeffect` = " << player->randomizeEffect << ",";
+	query << "`currentaura` = " << static_cast<uint16_t>(player->currentAura) << ',';
+	query << "`randomizeaura` = " << player->randomizeAura << ",";
+	query << "`currentshader` = " << static_cast<uint16_t>(player->currentShader) << ',';
+	query << "`randomizeshader` = " << player->randomizeShader << ",";
 	query << "`maglevel` = " << player->magLevel << ',';
 	query << "`mana` = " << player->mana << ',';
 	query << "`manamax` = " << player->manaMax << ',';
@@ -833,7 +910,73 @@ bool IOLoginData::savePlayer(Player* player)
 	if (!storageQuery.execute()) {
 		return false;
 	}
+	// --@ save wings
+	if (!db.executeQuery(fmt::format("DELETE FROM `player_wings` WHERE `player_id` = {:d}", player->getGUID()))) {
+		return false;
+	}
 
+	DBInsert wingQuery("INSERT INTO `player_wings` (`player_id`, `wing_id`) VALUES ");
+
+	for (const auto& it : player->wings) {
+		if (!wingQuery.addRow(fmt::format("{:d}, {:d}", player->getGUID(), it))) {
+			return false;
+		}
+	}
+	if (!wingQuery.execute()) {
+		return false;
+	}
+	// --@
+
+	// --@ save effects
+	if (!db.executeQuery(fmt::format("DELETE FROM `player_effects` WHERE `player_id` = {:d}", player->getGUID()))) {
+		return false;
+	}
+
+	DBInsert effectQuery("INSERT INTO `player_effects` (`player_id`, `effects_id`) VALUES ");
+
+	for (const auto& it : player->effects) {
+		if (!effectQuery.addRow(fmt::format("{:d}, {:d}", player->getGUID(), it))) {
+			return false;
+		}
+	}
+	if (!effectQuery.execute()) {
+		return false;
+	}
+	// --@
+
+	// --@ save aura
+	if (!db.executeQuery(fmt::format("DELETE FROM `player_auras` WHERE `player_id` = {:d}", player->getGUID()))) {
+		return false;
+	}
+
+	DBInsert auraQuery("INSERT INTO `player_auras` (`player_id`, `aura_id`) VALUES ");
+
+	for (const auto& it : player->auras) {
+		if (!auraQuery.addRow(fmt::format("{:d}, {:d}", player->getGUID(), it))) {
+			return false;
+		}
+	}
+	if (!auraQuery.execute()) {
+		return false;
+	}
+	// --@
+
+	// save shaders
+	if (!db.executeQuery(fmt::format("DELETE FROM `player_shaders` WHERE `player_id` = {:d}", player->getGUID()))) {
+		return false;
+	}
+
+	DBInsert shaderQuery("INSERT INTO `player_shaders` (`player_id`, `shader_id`) VALUES ");
+
+	for (const auto& it : player->shaders) {
+		if (!shaderQuery.addRow(fmt::format("{:d}, {:d}", player->getGUID(), it))) {
+			return false;
+		}
+	}
+
+	if (!shaderQuery.execute()) {
+		return false;
+	}
 	//End the transaction
 	return transaction.commit();
 }

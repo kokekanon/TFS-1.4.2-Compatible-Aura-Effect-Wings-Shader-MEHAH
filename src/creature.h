@@ -453,6 +453,9 @@ class Creature : virtual public Thing
 		bool getPathTo(const Position& targetPos, std::vector<Direction>& dirList, const FindPathParams& fpp) const;
 		bool getPathTo(const Position& targetPos, std::vector<Direction>& dirList, int32_t minTargetDist, int32_t maxTargetDist, bool fullPathSearch = true, bool clearSight = true, int32_t maxSearchDist = 0) const;
 
+		std::string getShader() const { return shader; }
+		void setShader(const std::string& shaderName) { shader = shaderName; }
+
 		void incrementReferenceCounter() {
 			++referenceCounter;
 		}
@@ -461,7 +464,11 @@ class Creature : virtual public Thing
 				delete this;
 			}
 		}
+		void attachEffectById(uint16_t id);
+		void detachEffectById(uint16_t id);
+		const std::vector<uint16_t> getAttachedEffectList() const { return attachedEffectList; }
 
+		bool manageDash(bool enabled);
 	protected:
 		virtual bool useCacheMap() const {
 			return false;
@@ -481,6 +488,7 @@ class Creature : virtual public Thing
 
 		using CountMap = std::map<uint32_t, CountBlock_t>;
 		CountMap damageMap;
+		std::string shader;
 
 		std::list<Creature*> summons;
 		CreatureEventList eventsList;
@@ -511,12 +519,17 @@ class Creature : virtual public Thing
 
 		Outfit_t currentOutfit;
 		Outfit_t defaultOutfit;
+		uint16_t currentWing;
+		uint16_t currentAura;
+		uint16_t currentEffect;
+		uint16_t currentShader;
 
 		Position lastPosition;
 		LightInfo internalLight;
 
 		Direction direction = DIRECTION_SOUTH;
 		Skulls_t skull = SKULL_NONE;
+		std::vector<uint16_t> attachedEffectList;
 
 		bool localMapCache[mapWalkHeight][mapWalkWidth] = {{ false }};
 		bool isInternalRemoved = false;

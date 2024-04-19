@@ -86,8 +86,11 @@ class LuaScriptInterface;
 class Cylinder;
 class Game;
 
+struct Wing;
+struct Aura;
+struct Effect;
 struct LootBlock;
-
+struct Shader;
 class ScriptEnvironment
 {
 	public:
@@ -400,6 +403,10 @@ class LuaScriptInterface
 		static void pushPosition(lua_State* L, const Position& position, int32_t stackpos = 0);
 		static void pushOutfit(lua_State* L, const Outfit_t& outfit);
 		static void pushOutfit(lua_State* L, const Outfit* outfit);
+		static void pushWing(lua_State* L, const Wing* wing);
+		static void pushAura(lua_State* L, const Aura* aura);
+		static void pushEffect(lua_State* L, const Effect* effect);
+		static void pushShader(lua_State* L, const Shader* shader);
 		static void pushLoot(lua_State* L, const std::vector<LootBlock>& lootList);
 
 		//
@@ -585,6 +592,46 @@ class LuaScriptInterface
 		static int luaGameGetAccountStorageValue(lua_State* L);
 		static int luaGameSetAccountStorageValue(lua_State* L);
 		static int luaGameSaveAccountStorageValues(lua_State* L);
+
+		static int luaGameGetWings(lua_State* L);
+		static int luaGameGetEffects(lua_State* L);
+		static int luaGameGetAuras(lua_State* L);
+		static int luaGameGetShaders(lua_State* L);
+
+		static int luaItemSetShader(lua_State* L);
+		static int luaItemHasShader(lua_State* L);
+		static int luaItemGetShader(lua_State* L);
+
+		static int luaCreatureAttachEffectById(lua_State* L);
+
+		static int luaCreatureDetachEffectById(lua_State* L);
+
+		static int luaCreatureSetShader(lua_State* L);
+		static int luaPlayerAddWing(lua_State* L);
+		static int luaPlayerRemoveWing(lua_State* L);
+		static int luaPlayerHasWing(lua_State* L);
+
+
+		static int luaCreatureGetShader(lua_State* L);
+		static int luaPlayerToggleWin(lua_State* L);
+		static int luaPlayerAddAura(lua_State* L);
+		static int luaPlayerRemoveAura(lua_State* L);
+		static int luaPlayerHasAura(lua_State* L);
+		static int luaPlayerToggleAura(lua_State* L);
+		static int luaPlayerAddEffect(lua_State* L);
+		static int luaPlayerRemoveEffect(lua_State* L);
+
+		static int luaPlayerHasEffect(lua_State* L);
+		static int luaPlayerToggleEffect(lua_State* L);
+		static int luaPlayerAddShader(lua_State* L);
+		static int luaPlayerRemoveShader(lua_State* L);
+		static int luaPlayerHasShader(lua_State* L);
+		static int luaPlayerToggleShader(lua_State* L);
+		static int luaPlayerGetMapShader(lua_State* L);
+		static int luaPlayerSetMapShader(lua_State* L);
+
+		static int luaPlayerToggleWing(lua_State* L);
+
 
 		// Variant
 		static int luaVariantCreate(lua_State* L);

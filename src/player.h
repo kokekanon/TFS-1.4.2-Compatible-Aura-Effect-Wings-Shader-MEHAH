@@ -146,7 +146,55 @@ class Player final : public Creature, public Cylinder
 		bool untameMount(uint8_t mountId);
 		bool hasMount(const Mount* mount) const;
 		void dismount();
-
+		// -- @ wings
+		uint16_t getRandomWing() const;
+		uint16_t getCurrentWing() const;
+		void setCurrentWing(uint16_t wingId);
+		bool isWinged() const { return defaultOutfit.lookWing != 0; }
+		bool toggleWing(bool wing);
+		bool tameWing(uint16_t wingId);
+		bool untameWing(uint16_t wingId);
+		bool hasWing(const Wing* wing) const;
+		bool hasWings() const;
+		void diswing();
+		// -- @ 
+		// -- @ Auras
+		uint16_t getRandomAura() const;
+		uint16_t getCurrentAura() const;
+		void setCurrentAura(uint16_t auraId);
+		bool isAuraed() const { return defaultOutfit.lookAura != 0; }
+		bool toggleAura(bool aura);
+		bool tameAura(uint16_t auraId);
+		bool untameAura(uint16_t auraId);
+		bool hasAura(const Aura* aura) const;
+		bool hasAuras() const;
+		void disaura();
+		// -- @ 
+		// -- @ Effect
+		uint16_t getRandomEffect() const;
+		uint16_t getCurrentEffect() const;
+		void setCurrentEffect(uint16_t effectId);
+		bool isEffected() const { return defaultOutfit.lookEffect != 0; }
+		bool toggleEffect(bool effect);
+		bool tameEffect(uint16_t effectId);
+		bool untameEffect(uint16_t effectId);
+		bool hasEffect(const Effect* effect) const;
+		bool hasEffects() const;
+		void diseffect();
+		// -- @
+		// -- @ Shader
+		uint16_t getRandomShader() const;
+		uint16_t getCurrentShader() const;
+		void setCurrentShader(uint16_t shaderId);
+		bool isShadered() const { return defaultOutfit.lookShader != 0; }
+		bool toggleShader(bool shader);
+		bool tameShader(uint16_t shaderId);
+		bool untameShader(uint16_t shaderId);
+		bool hasShader(const Shader* shader) const;
+		bool hasShaders() const;
+		void disshader();
+		std::string getCurrentShader_NAME() const;
+		// -- @
 		void sendFYIBox(const std::string& message) {
 			if (client) {
 				client->sendFYIBox(message);
@@ -860,7 +908,32 @@ class Player final : public Creature, public Cylinder
 				client->sendItems();
 			}
 		}
+		void sendAttachedEffect(const Creature* creature, uint16_t effectId)
+		{
+			if (client) {
+				client->sendAttachedEffect(creature, effectId);
+			}
+		}
 
+		void sendDetachEffect(const Creature* creature, uint16_t effectId)
+		{
+			if (client) {
+				client->sendDetachEffect(creature, effectId);
+			}
+		}
+
+		void sendShader(const Creature* creature, const std::string& shaderName)
+		{
+			if (client) {
+				client->sendShader(creature, shaderName);
+			}
+		}
+		void sendMapShader(const std::string& shaderName)
+		{
+			if (client) {
+				client->sendMapShader(shaderName);
+			}
+		}
 		//event methods
 		void onUpdateTileItem(const Tile* tile, const Position& pos, const Item* oldItem,
 		                              const ItemType& oldType, const Item* newItem, const ItemType& newType) override;
@@ -1203,6 +1276,10 @@ class Player final : public Creature, public Cylinder
 		std::map<uint32_t, int32_t> storageMap;
 
 		std::vector<OutfitEntry> outfits;
+		std::unordered_set<uint16_t> wings;
+		std::unordered_set<uint16_t> auras;
+		std::unordered_set<uint16_t> effects;
+		std::unordered_set<uint16_t> shaders;
 		GuildWarVector guildWarVector;
 
 		std::list<ShopInfo> shopItemList;
@@ -1214,6 +1291,7 @@ class Player final : public Creature, public Cylinder
 
 		std::string name;
 		std::string guildNick;
+		std::string mapShader;
 
 		Skill skills[SKILL_LAST + 1];
 		LightInfo itemsLight;
@@ -1236,6 +1314,10 @@ class Player final : public Creature, public Cylinder
 		int64_t lastPing;
 		int64_t lastPong;
 		int64_t nextAction = 0;
+		int64_t lastToggleWing = 0;
+		int64_t lastToggleEffect = 0;
+		int64_t lastToggleAura = 0;
+		int64_t lastToggleShader = 0;
 
 		BedItem* bedItem = nullptr;
 		Guild* guild = nullptr;
@@ -1310,7 +1392,16 @@ class Player final : public Creature, public Cylinder
 		bool pzLocked = false;
 		bool isConnecting = false;
 		bool addAttackSkillPoint = false;
+		bool wasWinged = false;
+		bool wasAuraed = false;
+		bool wasEffected = false;
+		bool wasShadered = false;
+		bool randomizeWing = false;
+		bool randomizeAura = false;
+		bool randomizeEffect = false;
+		bool randomizeShader = false;
 		bool inventoryAbilities[CONST_SLOT_LAST + 1] = {};
+		bool isMehah() const { return client ? client->isMehah : false; }
 
 		static uint32_t playerAutoID;
 
