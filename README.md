@@ -17,7 +17,17 @@ If you need help, please visit the [support forum on OTLand](https://otland.net/
 
 We use the [issue tracker on GitHub](https://github.com/otland/forgottenserver/issues). Keep in mind that everyone who is watching the repository gets notified by e-mail when there is activity, so be thoughtful and avoid writing comments that aren't meaningful for an issue (e.g. "+1"). If you'd like for an issue to be fixed faster, you should either fix it yourself and submit a pull request, or place a bounty on the issue.
 
-
+Client:
+```lua
+g_game.enableFeature(GameWingsAurasEffectsShader)
+g_game.enableFeature(GameFormatCreatureName)
+g_game.enableFeature(GameCreatureShader)
+g_game.enableFeature(GameCreatureAttachedEffect) 
+g_game.enableFeature(GameItemShader)
+g_game.enableFeature(GameItemTooltipV8);
+```
+DATA BASE
+```sql
 ALTER TABLE `players`
 ADD COLUMN `currentwing` smallint UNSIGNED NOT NULL DEFAULT '0',
 ADD COLUMN `randomizewing` tinyint NOT NULL DEFAULT '0',
@@ -27,8 +37,21 @@ ADD COLUMN `currenteffect` smallint UNSIGNED NOT NULL DEFAULT '0',
 ADD COLUMN `randomizeeffect` tinyint NOT NULL DEFAULT '0',
 ADD COLUMN `currentshader` smallint UNSIGNED NOT NULL DEFAULT '0',
 ADD COLUMN `randomizeshader` tinyint NOT NULL DEFAULT '0';
+```
 
 
+```sql
+ALTER TABLE `players`
+ADD COLUMN `currentwing` smallint UNSIGNED NOT NULL DEFAULT '0',
+ADD COLUMN `randomizewing` tinyint NOT NULL DEFAULT '0',
+ADD COLUMN `currentaura` smallint UNSIGNED NOT NULL DEFAULT '0',
+ADD COLUMN `randomizeaura` tinyint NOT NULL DEFAULT '0',
+ADD COLUMN `currenteffect` smallint UNSIGNED NOT NULL DEFAULT '0',
+ADD COLUMN `randomizeeffect` tinyint NOT NULL DEFAULT '0',
+ADD COLUMN `currentshader` smallint UNSIGNED NOT NULL DEFAULT '0',
+ADD COLUMN `randomizeshader` tinyint NOT NULL DEFAULT '0';
+```
+```sql
 CREATE TABLE IF NOT EXISTS `player_wings` (
   `player_id` int NOT NULL DEFAULT '0',
   `wing_id` smallint unsigned NOT NULL DEFAULT '0',
@@ -56,3 +79,6 @@ CREATE TABLE IF NOT EXISTS `player_shaders` (
   PRIMARY KEY (`player_id`, `shader_id`),
   FOREIGN KEY (`player_id`) REFERENCES `players`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARACTER SET=utf8;
+```
+
+![img](https://github.com/Nottinghster/otclient/assets/114332266/782e0fcf-b1cf-451e-b102-d7e7943bd50b)
