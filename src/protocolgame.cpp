@@ -3335,22 +3335,13 @@ void ProtocolGame::parseExtendedOpcode(NetworkMessage& msg)
 
 void ProtocolGame::sendAttachedEffect(const Creature* creature, uint16_t effectId)
 {
-	if (isMehah) {
+	if (!isMehah) return;
 		NetworkMessage playermsg;
 		playermsg.reset();
 		playermsg.addByte(0x34);
 		playermsg.add<uint32_t>(creature->getID());
 		playermsg.add<uint16_t>(effectId);
 		writeToOutputBuffer(playermsg);
-	}
-	else {
-		NetworkMessage playermsg;
-		playermsg.reset();
-		playermsg.addByte(0x34);
-		playermsg.add<uint32_t>(creature->getID());
-		playermsg.add<uint16_t>(effectId);
-		writeToOutputBuffer(playermsg);
-	}
 }
 
 void ProtocolGame::sendDetachEffect(const Creature* creature, uint16_t effectId)

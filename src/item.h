@@ -226,6 +226,14 @@ class ItemAttributes
 			void set(const T& v) {
 				value = v;
 			}
+			const std::string& getString() const
+			{
+				if (value.type() == typeid(std::string)) {
+					return boost::get<std::string>(value);
+				}
+
+				return emptyString;
+			}
 
 			template<typename T>
 			const T& get();
@@ -1033,6 +1041,26 @@ class Item : virtual public Thing
 		const Tile* getTile() const override;
 		bool isRemoved() const override {
 			return !parent || parent->isRemoved();
+		}
+		void setShader(const std::string& shaderName)
+		{
+			if (shaderName.empty()) {
+				removeCustomAttribute("shader");
+				return;
+			}
+
+			ItemAttributes::CustomAttribute val;
+			val.set<std::string>(shaderName);
+
+			std::string key = "shader";
+			setCustomAttribute(key, val);
+		}
+
+		bool hasShader() const { return const_cast<Item*>(this)->getCustomAttribute("shader") != nullptr; }
+		std::string getShader() const
+		{
+			auto shader = const_cast<Item*>(this)->getCustomAttribute("shader");
+			return shader ? shader->getString() : "";
 		}
 
 	protected:

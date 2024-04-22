@@ -43,7 +43,7 @@ Shader* Shaders::getShaderByID(uint8_t id)
 Shader* Shaders::getShaderByName(const std::string_view &name)
 {
        for (auto& it : shaders) {
-            if (caseInsensitiveEqual(name, it.name)) {
+		   if (strcasecmp(name.data(), it.name.c_str()) == 0) {
                 return &it;
             }
         }

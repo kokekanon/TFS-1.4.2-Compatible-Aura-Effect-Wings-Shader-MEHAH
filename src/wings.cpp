@@ -55,7 +55,7 @@ Wing* Wings::getWingByID(uint16_t id)
 Wing* Wings::getWingByName(std::string_view name)
 {
 	for (auto& it : wings) {
-		if (caseInsensitiveEqual(name, it.name)) {
+		if (strcasecmp(name.data(), it.name.c_str()) == 0) {
 			return &it;
 		}
 	}

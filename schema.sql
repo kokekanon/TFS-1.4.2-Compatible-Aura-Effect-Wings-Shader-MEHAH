@@ -372,7 +372,7 @@ CREATE TABLE IF NOT EXISTS `player_auras` (
 
 CREATE TABLE IF NOT EXISTS `player_shaders` (
   `player_id` int(11) NOT NULL DEFAULT 0,
-  `shader_id` smallint(5) UNSIGNED NOT NULL DEFAULT 0
+  `shader_id` smallint(5) UNSIGNED NOT NULL DEFAULT 0,
   PRIMARY KEY (`player_id`, `shader_id`),
   FOREIGN KEY (`player_id`) REFERENCES `players`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARACTER SET=utf8;

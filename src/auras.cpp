@@ -55,7 +55,7 @@ Aura* Auras::getAuraByID(uint16_t id)
 Aura* Auras::getAuraByName(std::string_view name)
 {
 	for (auto& it : auras) {
-		if (caseInsensitiveEqual(name, it.name)) {
+		if (strcasecmp(name.data(), it.name.c_str()) == 0) {
 			return &it;
 		}
 	}

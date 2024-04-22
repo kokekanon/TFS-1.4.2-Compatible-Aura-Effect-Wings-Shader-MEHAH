@@ -55,7 +55,7 @@ Effect* Effects::getEffectByID(uint16_t id)
 Effect* Effects::getEffectByName(std::string_view name)
 {
 	for (auto& it : effects) {
-		if (caseInsensitiveEqual(name, it.name)) {
+		if (strcasecmp(name.data(), it.name.c_str()) == 0) {
 			return &it;
 		}
 	}

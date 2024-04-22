@@ -1219,6 +1219,8 @@ class Player final : public Creature, public Cylinder
 		bool hasLearnedInstantSpell(const std::string& spellName) const;
 
 		void updateRegeneration();
+		std::string getMapShader() const { return mapShader; }
+		void setMapShader(const std::string& shaderName) { mapShader = shaderName; }
 
 	private:
 		std::forward_list<Condition*> getMuteConditions() const;

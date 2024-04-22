@@ -6992,6 +6992,50 @@ int LuaScriptInterface::luaItemIsStoreItem(lua_State* L)
 	}
 	return 1;
 }
+int LuaScriptInterface::luaItemHasShader(lua_State* L)
+{
+	// item:getShader()
+	const auto* item = getUserdata<const Item>(L, 1);
+	if (item) {
+		pushBoolean(L, item->hasShader());
+	}
+	else {
+		lua_pushnil(L);
+	}
+
+	return 1;
+}
+
+int LuaScriptInterface::luaItemGetShader(lua_State* L)
+{
+	// item:getShader()
+	const auto* item = getUserdata<const Item>(L, 1);
+	if (item) {
+		pushString(L, item->getShader());
+	}
+	else {
+		lua_pushnil(L);
+	}
+
+	return 1;
+}
+
+int LuaScriptInterface::luaItemSetShader(lua_State* L)
+{
+	// item:setShader(shaderName)
+	auto* item = getUserdata<Item>(L, 1);
+	if (!item) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	item->setShader(getString(L, 2));
+	g_game.refreshItem(item);
+
+	pushBoolean(L, true);
+	return 1;
+}
+
 
 // Container
 int LuaScriptInterface::luaContainerCreate(lua_State* L)
@@ -8277,7 +8321,7 @@ int LuaScriptInterface::luaCreatureGetZone(lua_State* L)
 	}
 	return 1;
 }
-int luaCreatureAttachEffectById(lua_State* L)
+int LuaScriptInterface:: luaCreatureAttachEffectById(lua_State* L)
 {
 	// creature:attachEffectById(effectId, [temporary])
 	Creature* creature = getUserdata<Creature>(L, 1);
@@ -8286,7 +8330,7 @@ int luaCreatureAttachEffectById(lua_State* L)
 		return 1;
 	}
 
-	uint16_t id = getInteger<uint16_t>(L, 2);
+	uint16_t id = getNumber<uint16_t>(L, 2);
 	bool temp = getBoolean(L, 3, false);
 
 	if (temp)
@@ -8297,7 +8341,7 @@ int luaCreatureAttachEffectById(lua_State* L)
 	return 1;
 }
 
-int luaCreatureDetachEffectById(lua_State* L)
+int LuaScriptInterface::luaCreatureDetachEffectById(lua_State* L)
 {
 	// creature:detachEffectById(effectId)
 	Creature* creature = getUserdata<Creature>(L, 1);
@@ -8312,7 +8356,7 @@ int luaCreatureDetachEffectById(lua_State* L)
 	return 1;
 }
 
-int luaCreatureGetShader(lua_State* L)
+int LuaScriptInterface::luaCreatureGetShader(lua_State* L)
 {
 	// creature:getShader()
 	const auto* creature = getUserdata<const Creature>(L, 1);
@@ -8326,7 +8370,7 @@ int luaCreatureGetShader(lua_State* L)
 	return 1;
 }
 
-int luaCreatureSetShader(lua_State* L)
+int LuaScriptInterface::luaCreatureSetShader(lua_State* L)
 {
 	// creature:setShader(shaderName)
 	auto* creature = getUserdata<Creature>(L, 1);
@@ -10498,8 +10542,8 @@ int LuaScriptInterface::luaPlayerAddWing(lua_State* L)
 	}
 
 	uint16_t wingId;
-	if (isInteger(L, 2)) {
-		wingId = getInteger<uint16_t>(L, 2);
+	if (isNumber(L, 2)) {
+		wingId = getNumber<uint16_t>(L, 2);
 	}
 	else {
 		Wing* wing = g_game.wings.getWingByName(getString(L, 2));
@@ -10524,8 +10568,8 @@ int LuaScriptInterface::luaPlayerRemoveWing(lua_State* L)
 	}
 
 	uint16_t wingId;
-	if (isInteger(L, 2)) {
-		wingId = getInteger<uint16_t>(L, 2);
+	if (isNumber(L, 2)) {
+		wingId = getNumber<uint16_t>(L, 2);
 	}
 	else {
 		Wing* wing = g_game.wings.getWingByName(getString(L, 2));
@@ -10550,8 +10594,8 @@ int LuaScriptInterface::luaPlayerHasWing(lua_State* L)
 	}
 
 	Wing* wing = nullptr;
-	if (isInteger(L, 2)) {
-		wing = g_game.wings.getWingByID(getInteger<uint16_t>(L, 2));
+	if (isNumber(L, 2)) {
+		wing = g_game.wings.getWingByID(getNumber<uint16_t>(L, 2));
 	}
 	else {
 		wing = g_game.wings.getWingByName(getString(L, 2));
@@ -10593,8 +10637,8 @@ int LuaScriptInterface::luaPlayerAddAura(lua_State* L)
 	}
 
 	uint16_t auraId;
-	if (isInteger(L, 2)) {
-		auraId = getInteger<uint16_t>(L, 2);
+	if (isNumber(L, 2)) {
+		auraId = getNumber<uint16_t>(L, 2);
 	}
 	else {
 		Aura* aura = g_game.auras.getAuraByName(getString(L, 2));
@@ -10619,8 +10663,8 @@ int LuaScriptInterface::luaPlayerRemoveAura(lua_State* L)
 	}
 
 	uint16_t auraId;
-	if (isInteger(L, 2)) {
-		auraId = getInteger<uint16_t>(L, 2);
+	if (isNumber(L, 2)) {
+		auraId = getNumber<uint16_t>(L, 2);
 	}
 	else {
 		Aura* aura = g_game.auras.getAuraByName(getString(L, 2));
@@ -10645,8 +10689,8 @@ int LuaScriptInterface::luaPlayerHasAura(lua_State* L)
 	}
 
 	Aura* aura = nullptr;
-	if (isInteger(L, 2)) {
-		aura = g_game.auras.getAuraByID(getInteger<uint16_t>(L, 2));
+	if (isNumber(L, 2)) {
+		aura = g_game.auras.getAuraByID(getNumber<uint16_t>(L, 2));
 	}
 	else {
 		aura = g_game.auras.getAuraByName(getString(L, 2));
@@ -10688,8 +10732,8 @@ int LuaScriptInterface::luaPlayerAddEffect(lua_State* L)
 	}
 
 	uint16_t effectId;
-	if (isInteger(L, 2)) {
-		effectId = getInteger<uint16_t>(L, 2);
+	if (isNumber(L, 2)) {
+		effectId = getNumber<uint16_t>(L, 2);
 	}
 	else {
 		Effect* effect = g_game.effects.getEffectByName(getString(L, 2));
@@ -10714,8 +10758,8 @@ int LuaScriptInterface::luaPlayerRemoveEffect(lua_State* L)
 	}
 
 	uint16_t effectId;
-	if (isInteger(L, 2)) {
-		effectId = getInteger<uint16_t>(L, 2);
+	if (isNumber(L, 2)) {
+		effectId = getNumber<uint16_t>(L, 2);
 	}
 	else {
 		Effect* effect = g_game.effects.getEffectByName(getString(L, 2));
@@ -10740,8 +10784,8 @@ int LuaScriptInterface::luaPlayerHasEffect(lua_State* L)
 	}
 
 	Effect* effect = nullptr;
-	if (isInteger(L, 2)) {
-		effect = g_game.effects.getEffectByID(getInteger<uint16_t>(L, 2));
+	if (isNumber(L, 2)) {
+		effect = g_game.effects.getEffectByID(getNumber<uint16_t>(L, 2));
 	}
 	else {
 		effect = g_game.effects.getEffectByName(getString(L, 2));
@@ -10781,8 +10825,8 @@ int LuaScriptInterface::luaPlayerAddShader(lua_State* L)
 	}
 
 	uint16_t shaderId;
-	if (isInteger(L, 2)) {
-		shaderId = getInteger<uint16_t>(L, 2);
+	if (isNumber(L, 2)) {
+		shaderId = getNumber<uint16_t>(L, 2);
 	}
 	else {
 		Shader* shader = g_game.shaders.getShaderByName(getString(L, 2));
@@ -10807,8 +10851,8 @@ int LuaScriptInterface::luaPlayerRemoveShader(lua_State* L)
 	}
 
 	uint16_t shaderId;
-	if (isInteger(L, 2)) {
-		shaderId = getInteger<uint16_t>(L, 2);
+	if (isNumber(L, 2)) {
+		shaderId = getNumber<uint16_t>(L, 2);
 	}
 	else {
 		Shader* shader = g_game.shaders.getShaderByName(getString(L, 2));
@@ -10833,8 +10877,8 @@ int LuaScriptInterface::luaPlayerHasShader(lua_State* L)
 	}
 
 	Shader* shader = nullptr;
-	if (isInteger(L, 2)) {
-		shader = g_game.shaders.getShaderByID(getInteger<uint16_t>(L, 2));
+	if (isNumber(L, 2)) {
+		shader = g_game.shaders.getShaderByID(getNumber<uint16_t>(L, 2));
 	}
 	else {
 		shader = g_game.shaders.getShaderByName(getString(L, 2));
