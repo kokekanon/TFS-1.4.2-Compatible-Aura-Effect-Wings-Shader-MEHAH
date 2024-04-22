@@ -448,7 +448,7 @@ class Game
 		void sendDetachEffect(const Creature* creature, uint16_t effectId);
 		void updateCreatureShader(const Creature* creature);
 		void refreshItem(const Item* item);
-		void sendPlayerToolsTips(uint32_t playerId, uint16_t itemID);
+
 
 		void setAccountStorageValue(const uint32_t accountId, const uint32_t key, const int32_t value);
 		int32_t getAccountStorageValue(const uint32_t accountId, const uint32_t key) const;

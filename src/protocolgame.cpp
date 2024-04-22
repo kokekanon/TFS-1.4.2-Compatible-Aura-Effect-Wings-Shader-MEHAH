@@ -839,7 +839,6 @@ void ProtocolGame::parseSetOutfit(NetworkMessage& msg)
 	newOutfit.lookFeet = msg.getByte();
 	newOutfit.lookAddons = msg.getByte();
 	newOutfit.lookMount = msg.get<uint16_t>();
-	newOutfit.lookMount = isMehah ? msg.get<uint16_t>() : 0;
 	newOutfit.lookWing = isMehah ? msg.get<uint16_t>() : 0;
 	newOutfit.lookAura = isMehah ? msg.get<uint16_t>() : 0;
 	newOutfit.lookEffect = isMehah ? msg.get<uint16_t>() : 0;
@@ -3171,7 +3170,6 @@ void ProtocolGame::AddOutfit(NetworkMessage& msg, const Outfit_t& outfit)
 
 	msg.add<uint16_t>(outfit.lookMount);
 	if (isMehah) {
-		msg.add<uint16_t>(outfit.lookMount);
 		msg.add<uint16_t>(outfit.lookWing);
 		msg.add<uint16_t>(outfit.lookAura);
 		msg.add<uint16_t>(outfit.lookEffect);

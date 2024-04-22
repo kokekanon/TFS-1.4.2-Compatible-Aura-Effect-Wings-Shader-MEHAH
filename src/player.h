@@ -1221,6 +1221,7 @@ class Player final : public Creature, public Cylinder
 		void updateRegeneration();
 		std::string getMapShader() const { return mapShader; }
 		void setMapShader(const std::string& shaderName) { mapShader = shaderName; }
+		bool isMehah() const { return client ? client->isMehah : false; }
 
 	private:
 		std::forward_list<Condition*> getMuteConditions() const;
@@ -1403,7 +1404,7 @@ class Player final : public Creature, public Cylinder
 		bool randomizeEffect = false;
 		bool randomizeShader = false;
 		bool inventoryAbilities[CONST_SLOT_LAST + 1] = {};
-		bool isMehah() const { return client ? client->isMehah : false; }
+
 
 		static uint32_t playerAutoID;
 

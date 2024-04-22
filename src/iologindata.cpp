@@ -576,21 +576,21 @@ bool IOLoginData::loadPlayer(Player* player, DBResult_ptr result)
 
 	// @-- wings
 	uint16_t currentWing = player->getCurrentWing();
-	std::cout << "currentWing: " << currentWing << std::endl;
+
 	if (currentWing > 0) {
 		player->attachEffectById(currentWing);
 	}
 	// @--
 	// @-- Aura
 	uint16_t currentAura = player->getCurrentAura();
-	std::cout << "currentAura: " << currentAura << std::endl;
+
 	if (currentAura > 0) {
 		player->attachEffectById(currentAura);
 	}
 	// @--
 	// @-- Effects
 	uint16_t currentEffect = player->getCurrentEffect();
-	std::cout << "EcurrentEffect: " << currentEffect << std::endl;
+
 	if (currentEffect > 0) {
 		player->attachEffectById(currentEffect);
 	}
