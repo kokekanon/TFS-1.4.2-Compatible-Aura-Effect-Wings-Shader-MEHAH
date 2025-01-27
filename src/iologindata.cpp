@@ -611,6 +611,7 @@ bool IOLoginData::loadPlayer(Player* player, DBResult_ptr result)
 
 		if (shader && shader->name != "Outfit - Default") {
 			player->setShader(shader->name);
+			g_game.updateCreatureShader(player);
 		}
 	}
 

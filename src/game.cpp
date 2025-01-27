@@ -3464,8 +3464,7 @@ void Game::playerChangeOutfit(uint32_t playerId, Outfit_t outfit)
 
 		player->setCurrentShader(shader->id);
 		player->sendShader(player, shader->name);
-
-
+		player->setShader(shader->name);
 	}
 	else {
 		if (player->isShadered()) {
@@ -5922,17 +5921,19 @@ void Game::sendDetachEffect(const Creature* creature, uint16_t effectId)
 
 void Game::updateCreatureShader(const Creature* creature)
 {
-	SpectatorVec spectators;
-	map.getSpectators(spectators, creature->getPosition(), false, true, 8, 8, 6, 6);
-	for (Creature* spectator : spectators) {
-		if (Player* spectatorPlayer = spectator->getPlayer()) {
-			spectatorPlayer->sendShader(creature, creature->getShader());
-
+	SchedulerTask* task = createSchedulerTask(100, [this, creature]() {
+		SpectatorVec spectators;
+		map.getSpectators(spectators, creature->getPosition(), false, true, 8, 8, 6, 6);
+		for (Creature* spectator : spectators) {
+			if (Player* spectatorPlayer = spectator->getPlayer()) {
+				spectatorPlayer->sendShader(creature, creature->getShader());
+			}
+			else {
+				spectator->setShader(creature->getShader());
+			}
 		}
-		else {
-			spectator->setShader(creature->getShader());
-		}
-	}
+		});
+	g_scheduler.addEvent(task);
 }
 
 void Game::refreshItem(const Item* item)
