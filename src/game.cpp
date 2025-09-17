@@ -3464,6 +3464,8 @@ void Game::playerChangeOutfit(uint32_t playerId, Outfit_t outfit)
 
 		player->setCurrentShader(shader->id);
 		player->sendShader(player, shader->name);
+		player->setShader(shader->name);
+		g_game.updateCreatureShader(player);
 
 
 	}
@@ -3474,6 +3476,8 @@ void Game::playerChangeOutfit(uint32_t playerId, Outfit_t outfit)
 		player->sendShader(player, "Outfit - Default");
 		player->setCurrentShader(0);
 		player->wasShadered = false;
+		player->setShader("Outfit - Default");
+		g_game.updateCreatureShader(player);
 	}
 
 	if (player->canWear(outfit.lookType, outfit.lookAddons)) {
